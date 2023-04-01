@@ -28,8 +28,11 @@ echo "reading DA settings from $config_file"
 
 GFSv17=${GFSv17:-"NO"}
 
-fv3bundle_vn=${fv3bundle_vn:-"release-v1.0"}
-
+if [[ ${BASELINE} =~ 'hera.internal' ]]; then
+  fv3bundle_vn=${fv3bundle_vn:-"20220921"}
+else
+  fv3bundle_vn=${fv3bundle_vn:-"release-v1.0"} #need debugging ${fv3bundle_vn:-"release-v1.0"}
+fi
 source $config_file
 
 LOGDIR=${OUTDIR}/DA/logs/
@@ -289,8 +292,12 @@ if [[ ${DAtype} == 'letkfoi_snow' ]]; then
     echo 'do_landDA: calling create ensemble' 
 
     # using ioda mods to get a python version with netCDF4
-
-    ${PYTHON} ${LANDDADIR}/letkf_create_ens.py $FILEDATE $SNOWDEPTHVAR $B
+    if [[ ${BASELINE} =~ 'hera.internal' ]]; then
+      source ${LANDDADIR}/ioda_mods_hera
+      python ${LANDDADIR}/letkf_create_ens.py $FILEDATE $SNOWDEPTHVAR $B
+    else
+      ${PYTHON} ${LANDDADIR}/letkf_create_ens.py $FILEDATE $SNOWDEPTHVAR $B
+    fi
     if [[ $? != 0 ]]; then
         echo "letkf create failed"
         exit 10
@@ -308,8 +315,10 @@ if [[ ! -e Data ]]; then
     ln -s $JEDI_STATICDIR Data 
 fi
 
-echo 'do_landDA: calling fv3-jedi' 
-
+echo 'do_landDA: calling fv3-jedi'
+if [[ ${BASELINE} =~ 'hera.internal' ]]; then 
+  source ${JEDI_EXECDIR}/../../../fv3_mods_hera
+fi
 if [[ $do_DA == "YES" ]]; then
     ${MPIEXEC} -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} letkf_land.yaml ${LOGDIR}/jedi_letkf.log
     if [[ $? != 0 ]]; then
@@ -345,6 +354,9 @@ cat << EOF > apply_incr_nml
 EOF
 
     echo 'do_landDA: calling apply snow increment'
+    if [[ ${BASELINE} =~ 'hera.internal' ]]; then
+      source ${LANDDADIR}/../land_mods_hera
+    fi
 
     # (n=6) -> this is fixed, at one task per tile (with minor code change, could run on a single proc). 
     ${MPIEXEC} -n 6 ${apply_incr_EXEC} ${LOGDIR}/apply_incr.log
