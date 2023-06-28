@@ -13,4 +13,4 @@ done
 # create links 
 echo 'creating jedi links'
 cd jedi/fv3-jedi/Data/
-make_links.sh
+./make_links.sh
