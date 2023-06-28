@@ -29,7 +29,7 @@ echo "reading DA settings from $config_file"
 GFSv17=${GFSv17:-"NO"}
 
 if [[ ${BASELINE} =~ 'hera.internal' ]]; then
-  fv3bundle_vn=${fv3bundle_vn:-"20220921"}
+  fv3bundle_vn=${fv3bundle_vn:-"psl_develop"}
 else
   fv3bundle_vn=${fv3bundle_vn:-"release-v1.0"} #need debugging ${fv3bundle_vn:-"release-v1.0"}
 fi
@@ -62,7 +62,7 @@ if [[ ! -e ${OUTDIR}/DA ]]; then
     mkdir ${OUTDIR}/DA/hofx
 fi 
 export JEDIWORKDIR=${WORKDIR}/mem000/jedi
-OROG_PATH=${LANDDA_INPUTS}/forcing/${atmos_forc}/orog_files
+OROG_PATH="TPATH"
 
 if [[ ! -e $JEDIWORKDIR ]]; then 
     mkdir -p $JEDIWORKDIR
@@ -135,8 +135,10 @@ do
   # get the obs file name 
   if [ ${OBS_TYPES[$ii]} == "GTS" ]; then
      obsfile=$OBSDIR/snow_depth/GTS/data_proc/${YYYY}${MM}/adpsfc_snow_${YYYY}${MM}${DD}${HH}.nc4
+  # GHCN are time-stamped at 18. If assimilating at 00, need to use previous day's obs, so that
+  # obs are within DA window.
   elif [ ${OBS_TYPES[$ii]} == "GHCN" ]; then 
-     obsfile=$OBSDIR/snow_depth/GHCN/data_proc/${YYYY}/ghcn_snwd_ioda_${YYYY}${MM}${DD}.nc
+     obsfile=$OBSDIR/snow_depth/GHCN/data_proc/v3/${YYYY}/ghcn_snwd_ioda_${YYYP}${MP}${DP}.nc
   elif [ ${OBS_TYPES[$ii]} == "SYNTH" ]; then 
      obsfile=$OBSDIR/synthetic_noahmp/IODA.synthetic_gswp_obs.${YYYY}${MM}${DD}${HH}.nc
   else
@@ -207,7 +209,6 @@ if [[ $do_DA == "YES" ]]; then
    sed -i -e "s/XXMP/${MP}/g" letkf_land.yaml
    sed -i -e "s/XXDP/${DP}/g" letkf_land.yaml
    sed -i -e "s/XXHP/${HP}/g" letkf_land.yaml
-   sed -i -e "s#DATAPATH#${OROG_PATH}#g" letkf_land.yaml
 
    sed -i -e "s/XXTSTUB/${TSTUB}/g" letkf_land.yaml
    sed -i -e "s#XXTPATH#${TPATH}#g" letkf_land.yaml
@@ -244,7 +245,6 @@ if [[ $do_HOFX == "YES" ]]; then
    sed -i -e "s/XXMP/${MP}/g" hofx_land.yaml
    sed -i -e "s/XXDP/${DP}/g" hofx_land.yaml
    sed -i -e "s/XXHP/${HP}/g" hofx_land.yaml
-   sed -i -e "s#DATAPATH#${OROG_PATH}#g" hofx_land.yaml
 
    sed -i -e "s#XXTPATH#${TPATH}#g" hofx_land.yaml
    sed -i -e "s/XXTSTUB/${TSTUB}/g" hofx_land.yaml
@@ -320,14 +320,22 @@ if [[ ${BASELINE} =~ 'hera.internal' ]]; then
   source ${JEDI_EXECDIR}/../../../fv3_mods_hera
 fi
 if [[ $do_DA == "YES" ]]; then
+    if [[ ${BASELINE} =~ 'hera.internal' ]]; then
+    srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} letkf_land.yaml ${LOGDIR}/jedi_letkf.log
+    else
     ${MPIEXEC} -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} letkf_land.yaml ${LOGDIR}/jedi_letkf.log
+    fi
     if [[ $? != 0 ]]; then
         echo "JEDI DA failed"
         exit 10
     fi
 fi 
-if [[ $do_HOFX == "YES" ]]; then  
+if [[ $do_HOFX == "YES" ]]; then
+    if [[ ${BASELINE} =~ 'hera.internal' ]]; then
+    srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} hofx_land.yaml ${LOGDIR}/jedi_hofx.log
+    else  
     ${MPIEXEC} -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} hofx_land.yaml ${LOGDIR}/jedi_hofx.log
+    fi
     if [[ $? != 0 ]]; then
         echo "JEDI hofx failed"
         exit 10
@@ -355,7 +363,7 @@ EOF
 
     echo 'do_landDA: calling apply snow increment'
     if [[ ${BASELINE} =~ 'hera.internal' ]]; then
-      source ${LANDDADIR}/../land_mods_hera
+      source ${LANDDADIR}/land_mods_hera
     fi
 
     # (n=6) -> this is fixed, at one task per tile (with minor code change, could run on a single proc). 
