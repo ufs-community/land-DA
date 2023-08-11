@@ -27,12 +27,8 @@ fi
 echo "reading DA settings from $config_file"
 
 GFSv17=${GFSv17:-"NO"}
+fv3bundle_vn=${fv3bundle_vn:-"psl_develop"}
 
-if [[ ${BASELINE} =~ 'hera.internal' ]]; then
-  fv3bundle_vn=${fv3bundle_vn:-"psl_develop"}
-else
-  fv3bundle_vn=${fv3bundle_vn:-"release-v1.0"} #need debugging ${fv3bundle_vn:-"release-v1.0"}
-fi
 source $config_file
 
 LOGDIR=${OUTDIR}/DA/logs/
@@ -316,14 +312,13 @@ if [[ ! -e Data ]]; then
 fi
 
 echo 'do_landDA: calling fv3-jedi'
-if [[ ${BASELINE} =~ 'hera.internal' ]]; then 
-  source ${JEDI_EXECDIR}/../../../fv3_mods_hera
-fi
+
 if [[ $do_DA == "YES" ]]; then
     if [[ ${BASELINE} =~ 'hera.internal' ]]; then
+    source ${JEDI_EXECDIR}/../../../fv3_mods_hera
     srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} letkf_land.yaml ${LOGDIR}/jedi_letkf.log
     else
-    ${MPIEXEC} -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} letkf_land.yaml ${LOGDIR}/jedi_letkf.log
+    srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} letkf_land.yaml ${LOGDIR}/jedi_letkf.log
     fi
     if [[ $? != 0 ]]; then
         echo "JEDI DA failed"
@@ -332,9 +327,10 @@ if [[ $do_DA == "YES" ]]; then
 fi 
 if [[ $do_HOFX == "YES" ]]; then
     if [[ ${BASELINE} =~ 'hera.internal' ]]; then
+    source ${JEDI_EXECDIR}/../../../fv3_mods_hera
     srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} hofx_land.yaml ${LOGDIR}/jedi_hofx.log
     else  
-    ${MPIEXEC} -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} hofx_land.yaml ${LOGDIR}/jedi_hofx.log
+    srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} hofx_land.yaml ${LOGDIR}/jedi_hofx.log
     fi
     if [[ $? != 0 ]]; then
         echo "JEDI hofx failed"
