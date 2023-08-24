@@ -318,7 +318,7 @@ if [[ $do_DA == "YES" ]]; then
     source /scratch2/NCEPDEV/land/data/jedi/fv3_mods_hera
     srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} letkf_land.yaml ${LOGDIR}/jedi_letkf.log
     else
-    srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} letkf_land.yaml ${LOGDIR}/jedi_letkf.log
+    ${MPIEXEC} -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} letkf_land.yaml ${LOGDIR}/jedi_letkf.log
     fi
     if [[ $? != 0 ]]; then
         echo "JEDI DA failed"
@@ -330,7 +330,7 @@ if [[ $do_HOFX == "YES" ]]; then
     source ${JEDI_EXECDIR}/../../../fv3_mods_hera
     srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} hofx_land.yaml ${LOGDIR}/jedi_hofx.log
     else  
-    srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} hofx_land.yaml ${LOGDIR}/jedi_hofx.log
+    ${MPIEXEC} -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} hofx_land.yaml ${LOGDIR}/jedi_hofx.log
     fi
     if [[ $? != 0 ]]; then
         echo "JEDI hofx failed"
