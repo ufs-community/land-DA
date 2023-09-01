@@ -28,11 +28,11 @@ echo "reading DA settings from $config_file"
 
 GFSv17=${GFSv17:-"NO"}
 fv3bundle_vn=${fv3bundle_vn:-"psl_develop"}
+#fv3bundle_vn=${fv3bundle_vn:-"release-v1.0"}
 
 source $config_file
 
 LOGDIR=${OUTDIR}/DA/logs/
-OBSDIR=${OBSDIR:-"/scratch2/NCEPDEV/land/data/DA/"}
 
 # executables
 if [[ -e ${BUILDDIR}/bin/apply_incr.exe ]]; then #prefer cmake-built executables
@@ -315,10 +315,10 @@ echo 'do_landDA: calling fv3-jedi'
 
 if [[ $do_DA == "YES" ]]; then
     if [[ ${BASELINE} =~ 'hera.internal' ]]; then
-    source ${JEDI_EXECDIR}/../../../fv3_mods_hera
+    source /scratch2/NCEPDEV/land/data/jedi/fv3_mods_hera
     srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} letkf_land.yaml ${LOGDIR}/jedi_letkf.log
     else
-    srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} letkf_land.yaml ${LOGDIR}/jedi_letkf.log
+    ${MPIEXEC} -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} letkf_land.yaml ${LOGDIR}/jedi_letkf.log
     fi
     if [[ $? != 0 ]]; then
         echo "JEDI DA failed"
@@ -330,7 +330,7 @@ if [[ $do_HOFX == "YES" ]]; then
     source ${JEDI_EXECDIR}/../../../fv3_mods_hera
     srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} hofx_land.yaml ${LOGDIR}/jedi_hofx.log
     else  
-    srun -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} hofx_land.yaml ${LOGDIR}/jedi_hofx.log
+    ${MPIEXEC} -n $NPROC_JEDI ${JEDI_EXECDIR}/${JEDI_EXEC} hofx_land.yaml ${LOGDIR}/jedi_hofx.log
     fi
     if [[ $? != 0 ]]; then
         echo "JEDI hofx failed"
