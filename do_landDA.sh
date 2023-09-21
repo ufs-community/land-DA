@@ -97,12 +97,15 @@ do
 cp ${RSTRDIR}/${FILEDATE}.sfc_data.tile${tile}.nc  ${RSTRDIR}/${FILEDATE}.sfc_data_back.tile${tile}.nc
 done
 fi 
+
 #stage restarts for applying JEDI update (files will get directly updated)
 for tile in 1 2 3 4 5 6 
 do
   ln -fs ${RSTRDIR}/${FILEDATE}.sfc_data.tile${tile}.nc ${JEDIWORKDIR}/${FILEDATE}.sfc_data.tile${tile}.nc
 done
+
 cres_file=${JEDIWORKDIR}/${FILEDATE}.coupler.res
+
 if [[ -e  ${RSTRDIR}/${FILEDATE}.coupler.res ]]; then 
     ln -sf ${RSTRDIR}/${FILEDATE}.coupler.res $cres_file
 else #  if not present, need to create coupler.res for JEDI 
