@@ -137,7 +137,7 @@ do
   # GHCN are time-stamped at 18. If assimilating at 00, need to use previous day's obs, so that
   # obs are within DA window.
   elif [ ${OBS_TYPES[$ii]} == "GHCN" ]; then 
-     obsfile=$OBSDIR/snow_depth/GHCN/data_proc/v3/${YYYY}/ghcn_snwd_ioda_${YYYP}${MP}${DP}.nc
+     obsfile=$OBSDIR/snow_depth/GHCN/data_proc/v3/${YYYY}/fake_ghcn_snwd_ioda_${YYYP}${MP}${DP}.nc
   elif [ ${OBS_TYPES[$ii]} == "SYNTH" ]; then 
      obsfile=$OBSDIR/synthetic_noahmp/IODA.synthetic_gswp_obs.${YYYY}${MM}${DD}${HH}.nc
   else
