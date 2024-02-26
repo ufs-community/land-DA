@@ -37,6 +37,8 @@ LOGDIR=${OUTDIR}/DA/logs/
 # executables
 if [[ -e ${BUILDDIR}/bin/apply_incr.exe ]]; then #prefer cmake-built executables
   apply_incr_EXEC=${BUILDDIR}/bin/apply_incr.exe
+elif [[ -e ${EXECdir}/apply_incr.exe ]]; then # vertical dir structure in nco standards
+  apply_incr_EXEC=${EXECdir}/apply_incr.exe
 else
   apply_incr_EXEC=${CYCLEDIR}/DA_update/add_jedi_incr/exec/apply_incr
 fi
